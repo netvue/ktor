@@ -79,6 +79,7 @@ private class TLSSocket(
                 buffer.flip()
                 output.send(TLSRecord(TLSRecordType.ApplicationData, packet = buildPacket { writeFully(buffer) }))
             }
+        } catch (cause: Throwable) {
         } finally {
             output.close()
         }
