@@ -116,17 +116,21 @@ internal class TLSClientHandshake(
                 }
             }
         } finally {
-            rawOutput.writeRecord(
-                TLSRecord(
-                    TLSRecordType.Alert,
-                    packet = buildPacket {
-                        writeByte(TLSAlertLevel.WARNING.code.toByte())
-                        writeByte(TLSAlertType.CloseNotify.code.toByte())
-                    }
+            try {
+                rawOutput.writeRecord(
+                    TLSRecord(
+                        TLSRecordType.Alert,
+                        packet = buildPacket {
+                            writeByte(TLSAlertLevel.WARNING.code.toByte())
+                            writeByte(TLSAlertType.CloseNotify.code.toByte())
+                        }
+                    )
                 )
-            )
 
-            rawOutput.flushAndClose()
+                rawOutput.flushAndClose()
+            } catch (cause: Throwable) {
+                channel.close(cause)
+            }
         }
     }
 
@@ -246,9 +250,11 @@ internal class TLSClientHandshake(
                         verifyHostnameInCertificate(config.serverName, serverCertificate)
                     }
                 }
+
                 TLSHandshakeType.CertificateRequest -> {
                     certificateInfo = readClientCertificateRequest(packet)
                 }
+
                 TLSHandshakeType.ServerKeyExchange -> {
                     when (exchangeType) {
                         ECDHE -> {
