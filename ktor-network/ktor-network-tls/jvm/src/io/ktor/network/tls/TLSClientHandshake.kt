@@ -115,6 +115,9 @@ internal class TLSClientHandshake(
                     channel.close(cause)
                 }
             }
+
+        } catch (cause: Throwable) {
+            channel.close(cause)
         } finally {
             try {
                 rawOutput.writeRecord(
